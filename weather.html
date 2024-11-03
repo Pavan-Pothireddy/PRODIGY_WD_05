@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            height: 100vh;
+            background: url('https://images.unsplash.com/photo-1561471026-0bbb77535d25?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8d2VhdGhlcnxlbnwwfHwwfHx8MA%3D%3D') no-repeat center center fixed; /* Background image */
+            background-size: cover; 
+            color: white;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); 
+        }
+
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px; 
+        }
+
+        input {
+            width: 250px; 
+            background: rgba(255, 255, 255, 0.8); 
+            color: #333; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); 
+        }
+
+        button {
+            background-color: #007BFF; 
+            color: white;
+            cursor: pointer; 
+            transition: background-color 0.3s; 
+        }
+
+        button:hover {
+            background-color: #0056b3; 
+        }
+
+        #weather-info {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+            padding: 20px;
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7); /* Shadow effect */
+        }
+
+        #weather-info h2 {
+            margin: 0;
+            font-size: 2em; /* Increase subtitle size */
+            text-align: center; /* Centered text */
+        }
+    </style>
+</head>
+<body>
+    <h1>Weather App</h1>
+    <input type="text" id="location-input" placeholder="Enter location (e.g., London)">
+    <button onclick="fetchWeather()">Get Weather</button>
+    <button onclick="getLocation()">Use My Location</button>
+
+    <div id="weather-info"></div>
+
+    <script>
+        const apiKey = 'b6907d289e10d714a6e88b30761fae22';
+
+        // Fetch weather data based on user input
+        async function fetchWeather() {
+            const location = document.getElementById('location-input').value;
+            if (!location) {
+                alert("Please enter a location.");
+                return;
+            }
+
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${apiKey}`;
+            await fetchWeatherData(url);
+        }
+
+        // Fetch weather data based on user's current geolocation
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
+                    await fetchWeatherData(url);
+                }, () => {
+                    alert("Unable to retrieve your location.");
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Fetch and display weather data
+        async function fetchWeatherData(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Location not found");
+                
+                const data = await response.json();
+                displayWeather(data);
+            } catch (error) {
+                document.getElementById('weather-info').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        // Display weather information
+        function displayWeather(data) {
+            const weatherInfo = `
+                <h2>Weather in ${data.name}</h2>
+                <p>Temperature: ${data.main.temp} °C</p>
+                <p>Condition: ${data.weather[0].description}</p>
+                <p>Humidity: ${data.main.humidity}%</p>
+                <p>Wind Speed: ${data.wind.speed} m/s</p>
+            `;
+            document.getElementById('weather-info').innerHTML = weatherInfo;
+        }
+    </script>
+</body>
+</html>
